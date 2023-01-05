@@ -17,7 +17,7 @@ func GetDb(ctx context.Context) (*sql.DB, error) {
 		cfg := mysql.NewConfig()
 
 		cfg.User = "root"
-		cfg.Addr = "127.0.0.1"
+		cfg.Addr = "mysql-server"
 		cfg.ParseTime = true
 		cfg.Passwd = "123456"
 		cfg.DBName = "todo"
