@@ -2,7 +2,9 @@ package model
 
 import (
 	"context"
+	"database/sql"
 	"github.com/davidgodeness/tododemo/database"
+	"github.com/gin-gonic/gin"
 	"time"
 )
 
@@ -12,7 +14,7 @@ const (
 )
 
 type Task struct {
-	Id        uint64    `json:"id"`
+	Id        int64     `json:"id"`
 	Name      string    `json:"name"`
 	Status    uint8     `json:"status"`
 	CreatedAt time.Time `json:"created_at"`
@@ -42,19 +44,29 @@ func CreateTask(ctx context.Context, name string) (Task, error) {
 		return t, err
 	}
 
-	t.Id = uint64(id)
+	t.Id = id
 	return t, nil
 }
 
-func GetTasks(ctx context.Context) ([]Task, error) {
+func GetTasks(ctx context.Context, query gin.H) ([]Task, error) {
 	db, err := database.GetDb(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	r, err := db.QueryContext(ctx, "select id, name, status, created_at, updated_at from task")
-	if err != nil {
-		return nil, err
+	var r *sql.Rows
+
+	if status, ok := query["status"]; ok {
+		r, err = db.QueryContext(ctx,
+			"select id, name, status, created_at, updated_at from task where status = ?", status)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		r, err = db.QueryContext(ctx, "select id, name, status, created_at, updated_at from task")
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	tasks := make([]Task, 0)
@@ -67,4 +79,35 @@ func GetTasks(ctx context.Context) ([]Task, error) {
 	}
 
 	return tasks, nil
+}
+
+func UpdateTask(ctx context.Context, id int64, data gin.H) (int64, error) {
+	db, err := database.GetDb(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	if status, ok := data["status"]; ok {
+		r, err := db.ExecContext(ctx, "update task set status = ? where id = ?", status, id)
+		if err != nil {
+			return 0, err
+		}
+		return r.RowsAffected()
+	}
+
+	return 0, nil
+}
+
+func DeleteTask(ctx context.Context, id int64) (int64, error) {
+	db, err := database.GetDb(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	r, err := db.ExecContext(ctx, "delete from task where id = ?", id)
+	if err != nil {
+		return 0, err
+	}
+
+	return r.RowsAffected()
 }
