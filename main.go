@@ -14,7 +14,12 @@ func main() {
 	routes.RegisterWebRoutes(r)
 	routes.RegisterApiRoutes(r)
 
-	srv := &http.Server{Addr: ":8080", Handler: r, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second}
+	srv := &http.Server{
+		Addr:         ":8080",
+		Handler:      r,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+	}
 
 	if err := srv.ListenAndServe(); err != nil {
 		log.Println(err)

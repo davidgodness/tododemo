@@ -10,4 +10,6 @@ func RegisterApiRoutes(r *gin.Engine) {
 
 	g.POST("/tasks", controller.CreateTask)
 	g.GET("/tasks", controller.GetTasks)
+	g.PATCH("/tasks/:id", controller.UpdateTask)
+	g.DELETE("/tasks/:id", controller.DeleteTask)
 }
