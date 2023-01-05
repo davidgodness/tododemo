@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/davidgodeness/tododemo/model"
@@ -49,7 +50,7 @@ func CreateTask(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, result)
+	c.IndentedJSON(http.StatusCreated, result)
 }
 
 func GetTasks(c *gin.Context) {
@@ -71,14 +72,10 @@ func GetTasks(c *gin.Context) {
 	}
 	tasks, err := model.GetTasks(c.Request.Context(), q)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.Status(http.StatusNotFound)
 		return
 	}
-	c.JSON(http.StatusOK, tasks)
-}
-
-func GetTask(c *gin.Context) {
-
+	c.IndentedJSON(http.StatusOK, tasks)
 }
 
 func UpdateTask(c *gin.Context) {
@@ -120,7 +117,7 @@ func UpdateTask(c *gin.Context) {
 	}
 
 	if r == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "id not exist"})
+		c.Status(http.StatusNotFound)
 		return
 	}
 
@@ -141,9 +138,29 @@ func DeleteTask(c *gin.Context) {
 	}
 
 	if r == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "id not exist"})
+		c.Status(http.StatusNotFound)
 		return
 	}
 
 	c.Status(http.StatusOK)
+}
+
+func GetTask(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+
+	t, err := model.GetTask(c.Request.Context(), int64(id))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, t)
 }

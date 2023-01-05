@@ -12,4 +12,5 @@ func RegisterApiRoutes(r *gin.Engine) {
 	g.GET("/tasks", controller.GetTasks)
 	g.PATCH("/tasks/:id", controller.UpdateTask)
 	g.DELETE("/tasks/:id", controller.DeleteTask)
+	g.GET("/tasks/:id", controller.GetTask)
 }

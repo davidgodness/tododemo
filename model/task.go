@@ -111,3 +111,20 @@ func DeleteTask(ctx context.Context, id int64) (int64, error) {
 
 	return r.RowsAffected()
 }
+
+func GetTask(ctx context.Context, id int64) (Task, error) {
+	var t Task
+	db, err := database.GetDb(ctx)
+	if err != nil {
+		return t, err
+	}
+
+	r := db.QueryRowContext(ctx, "select id, name, status, created_at, updated_at from task where id = ?", id)
+
+	err = r.Scan(&t.Id, &t.Name, &t.Status, &t.CreatedAt, &t.UpdatedAt)
+	if err != nil {
+		return t, err
+	}
+
+	return t, nil
+}
